@@ -1,0 +1,67 @@
+# depslib dependency file v1.0
+1692639384 source:/home/kali/repos/mal/impls/cpp/main.cpp
+	<iostream>
+
+1692646925 source:/home/kali/repos/mal/impls/cpp/printer.cpp
+	"printer.hpp"
+	"types.hpp"
+
+1692646953 /home/kali/repos/mal/impls/cpp/printer.hpp
+	"types.hpp"
+	<string>
+
+1692628011 /home/kali/repos/mal/impls/cpp/types.hpp
+	<string>
+	<vector>
+	<memory>
+
+1692647822 source:/home/kali/repos/mal/impls/cpp/types.cpp
+	"types.hpp"
+
+1692692583 source:/home/kali/repos/mal/impls/cpp/step1_read_print.cpp
+	<string>
+	<iostream>
+	"linenoise.hpp"
+	"reader.hpp"
+	"printer.hpp"
+	"types.hpp"
+
+1692613180 /home/kali/repos/mal/impls/cpp/linenoise.hpp
+	<termios.h>
+	<unistd.h>
+	<sys/ioctl.h>
+	<Windows.h>
+	<io.h>
+	<stdlib.h>
+	<stdio.h>
+	<errno.h>
+	<string.h>
+	<ctype.h>
+	<sys/types.h>
+	<string>
+	<fstream>
+	<functional>
+	<vector>
+	<iostream>
+
+1692646445 /home/kali/repos/mal/impls/cpp/reader.hpp
+	<vector>
+	<string>
+	<memory>
+	"types.hpp"
+	<regex>
+
+1692692306 source:/home/kali/repos/mal/impls/cpp/reader.cpp
+	"reader.hpp"
+	<regex>
+	"types.hpp"
+	<memory>
+	"debug.hpp"
+	"error.hpp"
+
+1692649211 /home/kali/repos/mal/impls/cpp/debug.hpp
+
+1692692078 /home/kali/repos/mal/impls/cpp/error.hpp
+	<string>
+	<iostream>
+
