@@ -4,6 +4,7 @@
 #include "reader.hpp"
 #include "printer.hpp"
 #include "types.hpp"
+#include "error.hpp"
 
 using std::string;
 using std::cout;
@@ -23,7 +24,7 @@ MalType EVAL(MalType input)
 
 string PRINT(MalType input)
 {
-  return Printer::prStr(input);
+  return Printer::prStr(input, true);
 }
 
 string rep(string input)
@@ -51,7 +52,14 @@ int main()
     {
       cout << rep(input) << endl;
     }
-    catch(...) {}
+    catch(EOFException& err)
+    {
+      err.log();
+    }
+    catch(InvalidKeyException& err)
+    {
+      err.log();
+    }
 
     linenoise::AddHistory(input.c_str());
   }

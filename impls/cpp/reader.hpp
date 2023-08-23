@@ -28,7 +28,7 @@ public:
   static MalType readStr(const string& input);
   static MalType readFrom(const shared_ptr<Tokenizer>& tokenizer);
   static MalType readAtom(const shared_ptr<Tokenizer>& tokenizer);
-  static MalType readList(const shared_ptr<Tokenizer>& tokenizer);
+  static MalType readList(const shared_ptr<Tokenizer>& tokenizer, const string& end);
 
 private:
   void skipWhitespace();

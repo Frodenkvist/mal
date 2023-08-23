@@ -2,8 +2,8 @@
 
 #include "types.hpp"
 
-string Printer::prStr(MalType malType)
+string Printer::prStr(MalType malType, bool printReadably)
 {
-  return malType->getString();
+  return malType->getString(printReadably);
 }
 

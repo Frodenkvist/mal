@@ -7,16 +7,36 @@ using std::string;
 using std::cout;
 using std::endl;
 
-class EOFException : std::exception
+class MalException : std::exception
 {
+protected:
   string msg_;
 
 public:
-  EOFException(string msg): msg_(msg) {}
+  MalException(string msg): msg_(msg) {}
 
-  void log()
+  virtual void log() = 0;
+};
+
+class EOFException : MalException
+{
+public:
+  EOFException(string msg): MalException(msg) {};
+
+  void log() override
   {
     cout << "EOF Exception occurred: " << msg_ << endl;
+  }
+};
+
+class InvalidKeyException : MalException
+{
+public:
+  InvalidKeyException(string msg): MalException(msg) {};
+
+  void log() override
+  {
+    cout << "Invalid Key Exception: " << msg_ << endl;
   }
 };
 

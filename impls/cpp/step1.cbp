@@ -32,7 +32,7 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="main.cpp" />
+		<Unit filename="error.hpp" />
 		<Unit filename="printer.cpp" />
 		<Unit filename="printer.hpp" />
 		<Unit filename="reader.cpp" />

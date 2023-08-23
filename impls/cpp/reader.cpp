@@ -2,7 +2,6 @@
 #include <regex>
 #include "types.hpp"
 #include <memory>
-#include "debug.hpp"
 #include "error.hpp"
 
 using std::regex;
@@ -10,12 +9,14 @@ using std::smatch;
 using std::regex_search;
 using std::shared_ptr;
 
-static const regex whitespaceRegex("[\\s,]+|;.*");
+static const regex skipRegexes[] = {
+  regex("[\\s,]+"), // whitespaces
+  regex(";.*")      // comments
+};
 static const regex tokenRegexes[] = {
   regex("~@"), // capture ~@
   regex("[\\[\\]{}()'`~^@]"), // capture any single []{}()'`~^@
   regex("\"(?:\\\\.|[^\\\\\"])*\"?"), // capture everything between two double quotes
-  regex(";.*"), // capture any sequence of characters starting with ;
   regex("[^\\s\\[\\]{}('\"`,;)]*") // capture a sequence of zero or more non special characters
 };
 
@@ -29,7 +30,6 @@ Tokenizer::Tokenizer(const string& input)
 
 string Tokenizer::next()
 {
-  //ASSERT(!eof(), "Tokenizer reading past EOF in next\n");
   if(eof()) throw EOFException("Tokenizer reading past EOF in next\n");
 
   auto ret = peek();
@@ -40,7 +40,6 @@ string Tokenizer::next()
 string Tokenizer::peek() const
 {
   if(eof()) throw EOFException("Tokenizer reading past EOF in peek\n");
-  //ASSERT(!eof(), "Tokenizer reading past EOF in peek\n");
   return token_;
 }
 
@@ -51,8 +50,19 @@ bool Tokenizer::eof() const
 
 void Tokenizer::skipWhitespace()
 {
-  while(fetchTokenFromRegex(whitespaceRegex))
-    iter_ += token_.size();
+  bool foundMatch = true;
+  while(foundMatch)
+  {
+    foundMatch = false;
+    for(auto regex : skipRegexes)
+    {
+      if(fetchTokenFromRegex(regex))
+      {
+        iter_ += token_.size();
+        foundMatch = true;
+      }
+    }
+  }
 }
 
 bool Tokenizer::fetchTokenFromRegex(regex regex)
@@ -95,7 +105,19 @@ MalType Tokenizer::readFrom(const shared_ptr<Tokenizer>& tokenizer)
   if(tokenizer->peek() == "(")
   {
     tokenizer->next();
-    return readList(tokenizer);
+    return readList(tokenizer, ")");
+  }
+
+  if(tokenizer->peek() == "[")
+  {
+    tokenizer->next();
+    return readList(tokenizer, "]");
+  }
+
+  if(tokenizer->peek() == "{")
+  {
+    tokenizer->next();
+    return readList(tokenizer, "}");
   }
 
   return readAtom(tokenizer);
@@ -105,34 +127,138 @@ MalType Tokenizer::readAtom(const shared_ptr<Tokenizer>& tokenizer)
 {
   string token = tokenizer->next();
 
+  if(token[0] == '"')
+  {
+    if(token.size() == 1 || token[token.size() - 1] != '"')
+    {
+      throw EOFException("missing \"");
+    }
+
+    string unescapedToken;
+    unescapedToken.reserve(token.size());
+    unescapedToken += '"';
+
+    for(auto itr = token.begin() + 1, end = token.end() - 1; itr != end; ++itr)
+    {
+      char c = *itr;
+
+      if(c == '\\')
+      {
+        ++itr;
+        if(itr == end)
+        {
+          throw EOFException("reading out of bounds when unescaping");
+        }
+
+        switch(*itr)
+        {
+        case '\\':
+          unescapedToken += '\\';
+          break;
+        case '"':
+          unescapedToken += '"';
+          break;
+        case 'n':
+          unescapedToken += '\n';
+          break;
+
+        default:
+          unescapedToken += c;
+        }
+
+        continue;
+      }
+
+      unescapedToken += c;
+    }
+
+    unescapedToken += '"';
+
+    unescapedToken.shrink_to_fit();
+
+    return MalType(new MalString(unescapedToken));
+  }
+
+  if(token[0] == ':')
+  {
+    return MalType(new MalKeyword(token));
+  }
+
+  if(token == "nil")
+  {
+    return MalType(new MalNil());
+  }
+
+  if(token == "true")
+  {
+    return MalType(new MalTrue());
+  }
+
+  if(token == "false")
+  {
+    return MalType(new MalFalse());
+  }
+
   if(std::all_of(token.begin(), token.end(), ::isdigit))
   {
     return MalType(new MalInt(std::stoi(token)));
   }
 
+
+  if(token == "'")
+  {
+    return MalType(new MalList({MalType(new MalSymbol("quote")), readFrom(tokenizer)}));
+  }
+
+  if(token == "`")
+  {
+    return MalType(new MalList({MalType(new MalSymbol("quasiquote")), readFrom(tokenizer)}));
+  }
+
+  if(token == "~")
+  {
+    return MalType(new MalList({MalType(new MalSymbol("unquote")), readFrom(tokenizer)}));
+  }
+
+  if(token == "~@")
+  {
+    return MalType(new MalList({MalType(new MalSymbol("splice-unquote")), readFrom(tokenizer)}));
+  }
+
+  if(token == "@")
+  {
+    return MalType(new MalList({MalType(new MalSymbol("deref")), readFrom(tokenizer)}));
+  }
+
   return MalType(new MalSymbol(token));
 }
 
-MalType Tokenizer::readList(const shared_ptr<Tokenizer>& tokenizer)
+MalType Tokenizer::readList(const shared_ptr<Tokenizer>& tokenizer, const string& end)
 {
   vector<MalType> elements;
 
-  try
+  while(tokenizer->peek() != end)
   {
-    while(tokenizer->peek() != ")")
-    {
-      elements.push_back(readFrom(tokenizer));
-    }
+    elements.push_back(readFrom(tokenizer));
   }
-  catch(EOFException& err)
-  {
-    err.log();
-    throw;
-  }
-
   tokenizer->next();
 
-  return MalType(new MalList(elements));
+  if(end == ")")
+  {
+    return MalType(new MalList(elements));
+  }
+
+  if(end == "]")
+  {
+    return MalType(new MalVector(elements));
+  }
+
+  if(end == "}")
+  {
+    return MalType(new MalHashMap(elements));
+  }
+
+  throw std::exception();
 }
 
 
