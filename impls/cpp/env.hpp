@@ -10,19 +10,21 @@ using std::string;
 using std::map;
 using std::shared_ptr;
 
-struct Env
+class EnvData;
+
+typedef shared_ptr<EnvData> Env;
+
+class EnvData
 {
-  map<string, shared_ptr<MalOperation>> operations;
+  map<string, MalType> data_;
+  Env outer_;
 
-  Env(map<string, shared_ptr<MalOperation>> inOperations): operations(inOperations) {}
+public:
+  EnvData(Env outer = nullptr);
 
-  static Env globalEnv;
+  MalType set(const string& key, MalType operation);
+  MalType get(const string& key);
+
+private:
+  EnvData* find(const string& key);
 };
-
-Env Env::globalEnv = Env({
-  { "+", std::make_shared<MalAddOperation>()},
-  { "-", std::make_shared<MalSubOperation>()},
-  { "*", std::make_shared<MalMultOperation>()},
-  { "/", std::make_shared<MalDivOperation>()}
-});
-

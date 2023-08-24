@@ -47,14 +47,15 @@ public:
   virtual string getString(bool printReadably) override;
 };
 
-class MalList : public MalTypeData
+class MalEnumerable : public MalTypeData
 {
+protected:
   vector<MalType> elements_;
 
 public:
-  MalList(vector<MalType> elements);
+  MalEnumerable(vector<MalType> elements);
 
-  virtual string getString(bool printReadably) override;
+  virtual string getString(bool printReadably) override = 0;
 
   vector<MalType>::iterator begin() { return elements_.begin(); }
   vector<MalType>::iterator end() { return elements_.end(); }
@@ -63,6 +64,14 @@ public:
   size_t size() const { return elements_.size(); }
 
   MalType operator[](const int& index) { return elements_[index]; }
+};
+
+class MalList : public MalEnumerable
+{
+public:
+  MalList(vector<MalType> elements): MalEnumerable(elements) {}
+
+  virtual string getString(bool printReadably) override;
 };
 
 class MalString : public MalTypeData
@@ -99,22 +108,12 @@ public:
   virtual string getString(bool printReadably) override;
 };
 
-class MalVector : public MalTypeData
+class MalVector : public MalEnumerable
 {
-  vector<MalType> elements_;
-
 public:
-  MalVector(vector<MalType> elements);
+  MalVector(vector<MalType> elements): MalEnumerable(elements) {}
 
   virtual string getString(bool printReadably) override;
-
-  vector<MalType>::iterator begin() { return elements_.begin(); }
-  vector<MalType>::iterator end() { return elements_.end(); }
-
-  bool isEmpty() const { return elements_.empty(); }
-  size_t size() const { return elements_.size(); }
-
-  MalType operator[](const int& index) { return elements_[index]; }
 };
 
 class MalKeyword : public MalTypeData

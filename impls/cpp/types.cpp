@@ -46,7 +46,7 @@ string MalSymbol::getString(bool _)
   return symbol_;
 }
 
-MalList::MalList(vector<MalType> elements)
+MalEnumerable::MalEnumerable(vector<MalType> elements)
 {
   elements_ = elements;
 }
@@ -111,11 +111,6 @@ string MalTrue::getString(bool _)
 string MalFalse::getString(bool _)
 {
   return "false";
-}
-
-MalVector::MalVector(vector<MalType> elements)
-{
-  elements_ = elements;
 }
 
 string MalVector::getString(bool printReadably)

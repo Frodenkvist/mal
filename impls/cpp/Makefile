@@ -6,5 +6,8 @@ step0_repl: step0_repl.cpp
 step1_read_print: step1_read_print.cpp
 	$(CXX) $(CXXFLAGS) -o step1_read_print step1_read_print.cpp types.cpp reader.cpp printer.cpp
 
-step2_eval: step2_eval.cpp
-	$(CXX) $(CXXFLAGS) -o step2_eval step2_eval.cpp types.cpp reader.cpp printer.cpp
+step2_eval: step2_eval.cpp types.cpp reader.cpp printer.cpp env.cpp
+	$(CXX) $(CXXFLAGS) -o step2_eval step2_eval.cpp types.cpp reader.cpp printer.cpp env.cpp
+
+step3_env: step3_env.cpp types.cpp reader.cpp printer.cpp env.cpp
+	$(CXX) $(CXXFLAGS) -o step3_env step3_env.cpp types.cpp reader.cpp printer.cpp env.cpp
