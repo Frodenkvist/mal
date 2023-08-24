@@ -107,6 +107,14 @@ public:
   MalVector(vector<MalType> elements);
 
   virtual string getString(bool printReadably) override;
+
+  vector<MalType>::iterator begin() { return elements_.begin(); }
+  vector<MalType>::iterator end() { return elements_.end(); }
+
+  bool isEmpty() const { return elements_.empty(); }
+  size_t size() const { return elements_.size(); }
+
+  MalType operator[](const int& index) { return elements_[index]; }
 };
 
 class MalKeyword : public MalTypeData
@@ -127,6 +135,9 @@ public:
   MalHashMap(vector<MalType> elements);
 
   virtual string getString(bool printReadably) override;
+
+  map<string, MalType>::iterator begin() { return map_.begin(); }
+  map<string, MalType>::iterator end() { return map_.end(); }
 
   MalType& operator[](const string& key);
 };

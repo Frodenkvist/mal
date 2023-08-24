@@ -50,6 +50,35 @@ MalType evalAst(const MalType& ast, Env& env)
     return MalType(new MalList(elements));
   }
 
+  if(typeid(*ast) == typeid(MalVector))
+  {
+    vector<MalType> elements;
+
+    auto* malVector= dynamic_cast<MalVector*>(&*ast);
+
+    for(auto mal : *malVector)
+    {
+      elements.push_back(EVAL(mal, env));
+    }
+
+    return MalType(new MalVector(elements));
+  }
+
+  if(typeid(*ast) == typeid(MalHashMap))
+  {
+    vector<MalType> elements;
+
+    auto* malHashMap = dynamic_cast<MalHashMap*>(&*ast);
+
+    for(auto pair : *malHashMap)
+    {
+      elements.push_back(READ(pair.first));
+      elements.push_back(EVAL(pair.second, env));
+    }
+
+    return MalType(new MalHashMap(elements));
+  }
+
   return ast;
 }
 
