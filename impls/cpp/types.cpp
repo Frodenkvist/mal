@@ -11,6 +11,26 @@ string MalInt::getString(bool _)
   return std::to_string(value_);
 }
 
+int MalInt::operator+(const MalInt& other) const
+{
+  return value_ + other.value_;
+}
+
+int MalInt::operator-(const MalInt& other) const
+{
+  return value_ - other.value_;
+}
+
+int MalInt::operator*(const MalInt& other) const
+{
+  return value_ * other.value_;
+}
+
+int MalInt::operator/(const MalInt& other) const
+{
+  return value_ / other.value_;
+}
+
 MalSymbol::MalSymbol(string symbol)
 {
   symbol_ = symbol;
@@ -157,4 +177,41 @@ string MalHashMap::getString(bool printReadably)
 MalType& MalHashMap::operator[](const string& key)
 {
   return map_[key];
+}
+
+string MalOperation::getString(bool _)
+{
+  return "";
+}
+
+MalType MalAddOperation::apply(vector<MalType> args)
+{
+  auto a = dynamic_cast<MalInt*>(&*args[0]);
+  auto b = dynamic_cast<MalInt*>(&*args[1]);
+
+  return MalType(new MalInt((*a) + (*b)));
+}
+
+MalType MalMultOperation::apply(vector<MalType> args)
+{
+  auto a = dynamic_cast<MalInt*>(&*args[0]);
+  auto b = dynamic_cast<MalInt*>(&*args[1]);
+
+  return MalType(new MalInt((*a) * (*b)));
+}
+
+MalType MalSubOperation::apply(vector<MalType> args)
+{
+  auto a = dynamic_cast<MalInt*>(&*args[0]);
+  auto b = dynamic_cast<MalInt*>(&*args[1]);
+
+  return MalType(new MalInt((*a) - (*b)));
+}
+
+MalType MalDivOperation::apply(vector<MalType> args)
+{
+  auto a = dynamic_cast<MalInt*>(&*args[0]);
+  auto b = dynamic_cast<MalInt*>(&*args[1]);
+
+  return MalType(new MalInt((*a) / (*b)));
 }

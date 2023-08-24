@@ -9,6 +9,8 @@ using std::smatch;
 using std::regex_search;
 using std::shared_ptr;
 
+static const regex intRegex("^-?\\d+$");
+
 static const regex skipRegexes[] = {
   regex("[\\s,]+"), // whitespaces
   regex(";.*")      // comments
@@ -199,7 +201,7 @@ MalType Tokenizer::readAtom(const shared_ptr<Tokenizer>& tokenizer)
     return MalType(new MalFalse());
   }
 
-  if(std::all_of(token.begin(), token.end(), ::isdigit))
+  if(regex_search(token, intRegex))
   {
     return MalType(new MalInt(std::stoi(token)));
   }

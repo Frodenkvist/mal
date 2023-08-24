@@ -40,3 +40,14 @@ public:
   }
 };
 
+class InvalidSymbolException : MalException
+{
+public:
+  InvalidSymbolException(string msg): MalException(msg) {};
+
+  void log() override
+  {
+    cout << "Invalid Symbol Exception: " << msg_ << endl;
+  }
+};
+

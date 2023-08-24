@@ -1,0 +1,71 @@
+# depslib dependency file v1.0
+1692723407 source:/home/kali/repos/mal/impls/cpp/printer.cpp
+	"printer.hpp"
+	"types.hpp"
+
+1692723411 /home/kali/repos/mal/impls/cpp/printer.hpp
+	"types.hpp"
+	<string>
+
+1692800111 /home/kali/repos/mal/impls/cpp/types.hpp
+	<string>
+	<vector>
+	<memory>
+	<map>
+
+1692801294 source:/home/kali/repos/mal/impls/cpp/types.cpp
+	"types.hpp"
+	"error.hpp"
+
+1692712255 source:/home/kali/repos/mal/impls/cpp/reader.cpp
+	"reader.hpp"
+	<regex>
+	"types.hpp"
+	<memory>
+	"error.hpp"
+	<iostream>
+
+1692646445 /home/kali/repos/mal/impls/cpp/reader.hpp
+	<vector>
+	<string>
+	<memory>
+	"types.hpp"
+	<regex>
+
+1692649211 /home/kali/repos/mal/impls/cpp/debug.hpp
+
+1692800797 /home/kali/repos/mal/impls/cpp/error.hpp
+	<string>
+	<iostream>
+
+1692697621 source:/home/kali/repos/mal/impls/cpp/step2_eval.cpp
+	<string>
+	<iostream>
+	"linenoise.hpp"
+	"reader.hpp"
+	"printer.hpp"
+	"types.hpp"
+	"env.hpp"
+
+1692613180 /home/kali/repos/mal/impls/cpp/linenoise.hpp
+	<termios.h>
+	<unistd.h>
+	<sys/ioctl.h>
+	<Windows.h>
+	<io.h>
+	<stdlib.h>
+	<stdio.h>
+	<errno.h>
+	<string.h>
+	<ctype.h>
+	<sys/types.h>
+	<string>
+	<fstream>
+	<functional>
+	<vector>
+	<iostream>
+
+1692697692 /home/kali/repos/mal/impls/cpp/env.hpp
+	<string>
+	<map>
+
