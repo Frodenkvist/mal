@@ -8,7 +8,7 @@ using std::string;
 class Printer
 {
 public:
-  static string prStr(MalType malType, bool printReadably = false);
+  static string prStr(const MalType& malType, const bool& printReadably = false);
 };
 
 

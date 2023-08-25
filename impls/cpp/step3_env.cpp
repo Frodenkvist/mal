@@ -136,7 +136,7 @@ MalType EVAL(const MalType& input, Env& env)
 
 string PRINT(const MalType& input)
 {
-  return Printer::prStr(input);
+  return Printer::prStr(input, true);
 }
 
 string rep(const string& input)

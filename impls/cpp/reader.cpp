@@ -188,17 +188,17 @@ MalType Tokenizer::readAtom(const shared_ptr<Tokenizer>& tokenizer)
 
   if(token == "nil")
   {
-    return MalType(new MalNil());
+    return MNil;
   }
 
   if(token == "true")
   {
-    return MalType(new MalTrue());
+    return MTrue;
   }
 
   if(token == "false")
   {
-    return MalType(new MalFalse());
+    return MFalse;
   }
 
   if(regex_search(token, intRegex))

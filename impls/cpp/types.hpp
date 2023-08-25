@@ -12,13 +12,23 @@ using std::shared_ptr;
 using std::map;
 using std::function;
 
+class MalTypeData;
+typedef shared_ptr<MalTypeData> MalType;
+
+class EnvData;
+typedef shared_ptr<EnvData> Env;
+
+extern MalType MFalse;
+extern MalType MTrue;
+extern MalType MNil;
+
 class MalTypeData
 {
 public:
   virtual string getString(bool printReadably) = 0;
-};
 
-typedef shared_ptr<MalTypeData> MalType;
+  virtual bool equals(const MalType& other) const { return false; }
+};
 
 class MalInt : public MalTypeData
 {
@@ -33,6 +43,12 @@ public:
   int operator-(const MalInt& other) const;
   int operator*(const MalInt& other) const;
   int operator/(const MalInt& other) const;
+  bool operator>(const MalInt& other) const;
+  bool operator>=(const MalInt& other) const;
+  bool operator<(const MalInt& other) const;
+  bool operator<=(const MalInt& other) const;
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalSymbol : public MalTypeData
@@ -45,6 +61,8 @@ public:
   string getSymbol() const;
 
   virtual string getString(bool printReadably) override;
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalEnumerable : public MalTypeData
@@ -64,6 +82,8 @@ public:
   size_t size() const { return elements_.size(); }
 
   MalType operator[](const int& index) { return elements_[index]; }
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalList : public MalEnumerable
@@ -82,6 +102,8 @@ public:
   MalString(const string& value);
 
   virtual string getString(bool printReadably) override;
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalNil : public MalTypeData
@@ -90,6 +112,8 @@ public:
   MalNil() = default;
 
   virtual string getString(bool printReadably) override;
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalTrue : public MalTypeData
@@ -98,6 +122,8 @@ public:
   MalTrue() = default;
 
   virtual string getString(bool printReadably) override;
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalFalse : public MalTypeData
@@ -106,6 +132,8 @@ public:
   MalFalse() = default;
 
   virtual string getString(bool printReadably) override;
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalVector : public MalEnumerable
@@ -124,6 +152,8 @@ public:
   MalKeyword(const string& keyword);
 
   virtual string getString(bool printReadably) override;
+
+  virtual bool equals(const MalType& other) const override;
 };
 
 class MalHashMap : public MalTypeData
@@ -148,7 +178,7 @@ public:
 
   virtual string getString(bool printReadably) override;
 
-  virtual MalType apply(vector<MalType> args) = 0;
+  virtual MalType apply(const vector<MalType>& args) = 0;
 };
 
 class MalAddOperation : public MalOperation
@@ -156,7 +186,7 @@ class MalAddOperation : public MalOperation
 public:
   MalAddOperation() = default;
 
-  virtual MalType apply(vector<MalType> args) override;
+  virtual MalType apply(const vector<MalType>& args) override;
 };
 
 class MalMultOperation : public MalOperation
@@ -164,7 +194,7 @@ class MalMultOperation : public MalOperation
 public:
   MalMultOperation() = default;
 
-  virtual MalType apply(vector<MalType> args) override;
+  virtual MalType apply(const vector<MalType>& args) override;
 };
 
 class MalSubOperation : public MalOperation
@@ -172,7 +202,7 @@ class MalSubOperation : public MalOperation
 public:
   MalSubOperation() = default;
 
-  virtual MalType apply(vector<MalType> args) override;
+  virtual MalType apply(const vector<MalType>& args) override;
 };
 
 class MalDivOperation : public MalOperation
@@ -180,5 +210,100 @@ class MalDivOperation : public MalOperation
 public:
   MalDivOperation() = default;
 
-  virtual MalType apply(vector<MalType> args) override;
+  virtual MalType apply(const vector<MalType>& args) override;
 };
+
+class MalFunction : public MalOperation
+{
+  vector<MalType> bindings_;
+  MalType body_;
+  Env baseEnv_;
+
+public:
+  MalFunction(const vector<MalType>& bindings, const MalType& body, const Env& baseEnv);
+
+  virtual string getString(bool printReadably) override;
+
+  MalType apply(const vector<MalType>& args);
+};
+
+class MalPrnOperation : public MalOperation
+{
+public:
+  MalPrnOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalListOperation : public MalOperation
+{
+public:
+  MalListOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsListOperation : public MalOperation
+{
+public:
+  MalIsListOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsEmptyOperation : public MalOperation
+{
+public:
+  MalIsEmptyOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalCountOperation : public MalOperation
+{
+public:
+  MalCountOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalEqualsOperation : public MalOperation
+{
+public:
+  MalEqualsOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalGTOperation : public MalOperation
+{
+public:
+  MalGTOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalGTEOperation : public MalOperation
+{
+public:
+  MalGTEOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalLTOperation : public MalOperation
+{
+public:
+  MalLTOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalLTEOperation : public MalOperation
+{
+public:
+  MalLTEOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+

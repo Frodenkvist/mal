@@ -5,10 +5,12 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <vector>
 
 using std::string;
 using std::map;
 using std::shared_ptr;
+using std::vector;
 
 class EnvData;
 
@@ -20,7 +22,7 @@ class EnvData
   Env outer_;
 
 public:
-  EnvData(Env outer = nullptr);
+  EnvData(Env outer = nullptr, const vector<MalType>& binds = {}, const vector<MalType>& exprs = {});
 
   MalType set(const string& key, MalType operation);
   MalType get(const string& key);

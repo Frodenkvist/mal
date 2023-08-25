@@ -2,7 +2,7 @@
 
 #include "types.hpp"
 
-string Printer::prStr(MalType malType, bool printReadably)
+string Printer::prStr(const MalType& malType, const bool& printReadably)
 {
   return malType->getString(printReadably);
 }

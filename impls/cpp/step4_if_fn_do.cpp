@@ -7,6 +7,7 @@
 #include "types.hpp"
 #include "env.hpp"
 #include "error.hpp"
+#include "core.hpp"
 
 using std::string;
 using std::cout;
@@ -16,7 +17,9 @@ using std::cin;
 using std::function;
 using std::vector;
 
-MalType EVAL(const MalType& input, Env& env);
+Env env = Env(new EnvData());
+
+MalType EVAL(const MalType& input, Env env);
 
 MalType READ(const string& input)
 {
@@ -28,12 +31,8 @@ MalType evalAst(const MalType& ast, Env& env)
   if(typeid(*ast) == typeid(MalSymbol))
   {
     auto* symbol = dynamic_cast<MalSymbol*>(&*ast);
-    if(env.operations.find(symbol->getSymbol()) == env.operations.end())
-    {
-      throw InvalidSymbolException("Invalid symbol found in eval");
-    }
 
-    return env.operations[symbol->getSymbol()];
+    return env->get(symbol->getSymbol());
   }
 
   if(typeid(*ast) == typeid(MalList))
@@ -82,7 +81,7 @@ MalType evalAst(const MalType& ast, Env& env)
   return ast;
 }
 
-MalType EVAL(const MalType& input, Env& env)
+MalType EVAL(const MalType& input, Env env)
 {
   if(typeid(*input) != typeid(MalList))
   {
@@ -94,6 +93,78 @@ MalType EVAL(const MalType& input, Env& env)
   if(malList->isEmpty())
   {
     return input;
+  }
+
+  if(typeid(*(*malList)[0]) == typeid(MalSymbol))
+  {
+    auto symbol = dynamic_cast<MalSymbol*>(&*(*malList)[0]);
+    
+    if(symbol->getSymbol() == "def!")
+    {
+      auto key = dynamic_cast<MalSymbol*>(&*(*malList)[1]);
+      return env->set(key->getSymbol(), EVAL((*malList)[2], env));
+    }
+
+    if(symbol->getSymbol() == "let*")
+    {
+      auto newEnv = Env(new EnvData(env));
+      auto* defs = dynamic_cast<MalEnumerable*>(&*(*malList)[1]);
+
+      for(auto itr = defs->begin(); itr != defs->end(); ++itr)
+      {
+        auto* key = dynamic_cast<MalSymbol*>(&*(*itr));
+        ++itr;
+        auto value = EVAL(*itr, newEnv);
+
+        newEnv->set(key->getSymbol(), value);
+      }
+
+      return EVAL((*malList)[2], newEnv);
+    }
+
+    if(symbol->getSymbol() == "do")
+    {
+      vector<MalType> elements;
+      for(auto itr = malList->begin() + 1; itr != malList->end(); ++itr)
+      {
+        elements.push_back(*itr);
+      }
+
+      auto evalList = evalAst(MalType(new MalList(elements)), env);
+      auto* evalListPtr = dynamic_cast<MalList*>(&*evalList);
+
+      return (*evalListPtr)[evalListPtr->size() - 1];
+    }
+
+    if(symbol->getSymbol() == "if")
+    {
+      auto result = EVAL((*malList)[1], env);
+
+      if(result != MNil && result != MFalse)
+      {
+        return EVAL((*malList)[2], env);
+      }
+
+      if(malList->size() == 3)
+      {
+        return MNil;
+      }
+
+      return EVAL((*malList)[3], env);
+    }
+
+    if(symbol->getSymbol() == "fn*")
+    {
+      vector<MalType> bindings;
+      auto* argsList = dynamic_cast<MalList*>(&*(*malList)[1]);
+
+      for(auto itr = argsList->begin(); itr != argsList->end(); ++itr)
+      {
+        bindings.push_back(*itr);
+      }
+
+      return MalType(new MalFunction(bindings, (*malList)[2], env));
+    }
   }
 
   auto evalList = evalAst(input, env);
@@ -119,7 +190,7 @@ string PRINT(const MalType& input)
 string rep(const string& input)
 {
   auto ast = READ(input);
-  auto result = EVAL(ast, Env::globalEnv);
+  auto result = EVAL(ast, env);
   auto output = PRINT(result);
 
   return output;
@@ -127,6 +198,11 @@ string rep(const string& input)
 
 int main()
 {
+  for(auto itr = Core::ns.begin(); itr != Core::ns.end(); ++itr)
+  {
+    env->set(itr->first, itr->second);
+  }
+
   const auto history_path = "history.txt";
   linenoise::LoadHistory(history_path);
 

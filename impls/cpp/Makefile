@@ -11,3 +11,6 @@ step2_eval: step2_eval.cpp types.cpp reader.cpp printer.cpp env.cpp
 
 step3_env: step3_env.cpp types.cpp reader.cpp printer.cpp env.cpp
 	$(CXX) $(CXXFLAGS) -o step3_env step3_env.cpp types.cpp reader.cpp printer.cpp env.cpp
+
+step4_if_fn_do: step4_if_fn_do.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
+	$(CXX) $(CXXFLAGS) -o step4_if_fn_do step4_if_fn_do.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp

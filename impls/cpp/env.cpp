@@ -1,9 +1,14 @@
 #include "env.hpp"
 #include "error.hpp"
 
-EnvData::EnvData(Env outer)
+EnvData::EnvData(Env outer, const vector<MalType>& binds, const vector<MalType>& exprs)
 {
     outer_ = outer;
+    for(size_t i = 0; i < binds.size(); ++i)
+    {
+        auto* symbol = dynamic_cast<MalSymbol*>(&*binds[i]);
+        set(symbol->getSymbol(), exprs[i]);
+    }
 }
 
 MalType EnvData::set(const string& key, MalType operation)
