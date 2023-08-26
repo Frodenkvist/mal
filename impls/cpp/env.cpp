@@ -7,6 +7,23 @@ EnvData::EnvData(Env outer, const vector<MalType>& binds, const vector<MalType>&
     for(size_t i = 0; i < binds.size(); ++i)
     {
         auto* symbol = dynamic_cast<MalSymbol*>(&*binds[i]);
+
+        if(symbol->getSymbol() == "&")
+        {
+            vector<MalType> args;
+
+            for(size_t j = i;j < exprs.size(); ++j)
+            {
+                args.push_back(exprs[j]);
+            }
+
+            auto* bindingSymbol = dynamic_cast<MalSymbol*>(&*binds[i + 1]);
+
+            set(bindingSymbol->getSymbol(), MalType(new MalList(args)));
+
+            break;
+        }
+
         set(symbol->getSymbol(), exprs[i]);
     }
 }

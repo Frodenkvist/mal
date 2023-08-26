@@ -138,7 +138,6 @@ MalType Tokenizer::readAtom(const shared_ptr<Tokenizer>& tokenizer)
 
     string unescapedToken;
     unescapedToken.reserve(token.size());
-    unescapedToken += '"';
 
     for(auto itr = token.begin() + 1, end = token.end() - 1; itr != end; ++itr)
     {
@@ -173,8 +172,6 @@ MalType Tokenizer::readAtom(const shared_ptr<Tokenizer>& tokenizer)
 
       unescapedToken += c;
     }
-
-    unescapedToken += '"';
 
     unescapedToken.shrink_to_fit();
 

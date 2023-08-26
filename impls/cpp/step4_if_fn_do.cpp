@@ -156,7 +156,7 @@ MalType EVAL(const MalType& input, Env env)
     if(symbol->getSymbol() == "fn*")
     {
       vector<MalType> bindings;
-      auto* argsList = dynamic_cast<MalList*>(&*(*malList)[1]);
+      auto* argsList = dynamic_cast<MalEnumerable*>(&*(*malList)[1]);
 
       for(auto itr = argsList->begin(); itr != argsList->end(); ++itr)
       {
@@ -202,6 +202,8 @@ int main()
   {
     env->set(itr->first, itr->second);
   }
+
+  rep("(def! not (fn* (a) (if a false true)))");
 
   const auto history_path = "history.txt";
   linenoise::LoadHistory(history_path);

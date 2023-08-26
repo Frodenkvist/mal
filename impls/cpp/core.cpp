@@ -16,5 +16,8 @@ map<string, MalType> Core::ns = {
   { "+", MalType(new MalAddOperation()) },
   { "-", MalType(new MalSubOperation()) },
   { "*", MalType(new MalMultOperation()) },
-  { "/", MalType(new MalDivOperation()) }
+  { "/", MalType(new MalDivOperation()) },
+  { "pr-str", MalType(new MalPrStrOperation()) },
+  { "str", MalType(new MalStrOperation()) },
+  { "println", MalType(new MalPrintlnOperation()) }
 };

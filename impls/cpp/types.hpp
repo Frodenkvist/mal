@@ -307,3 +307,26 @@ public:
   virtual MalType apply(const vector<MalType>& args) override;
 };
 
+class MalPrStrOperation : public MalOperation
+{
+public:
+  MalPrStrOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalStrOperation : public MalOperation
+{
+public:
+  MalStrOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalPrintlnOperation : public MalOperation
+{
+public:
+  MalPrintlnOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};

@@ -104,9 +104,9 @@ MalEnumerable::MalEnumerable(vector<MalType> elements)
 
 bool MalEnumerable::equals(const MalType& other) const
 {
-  if(typeid(*other) != typeid(MalEnumerable)) return false;
-
   auto* otherEnumerable = dynamic_cast<MalEnumerable*>(&*other);
+
+  if(!otherEnumerable) return false;
 
   if(size() != otherEnumerable->size()) return false;
 
@@ -135,13 +135,13 @@ string MalList::getString(bool printReadably)
 
 MalString::MalString(const string& value)
 {
-  value_ = value;
+  value_ = '"' + value + '"';
 }
 
 string MalString::getString(bool printReadably)
 {
   if(!printReadably)
-    return value_;
+    return value_.substr(1, value_.size() - 2);
 
   string readableString;
 
@@ -330,7 +330,15 @@ MalType MalFunction::apply(const vector<MalType>& args)
 
 MalType MalPrnOperation::apply(const vector<MalType>& args)
 {
-  cout << Printer::prStr(args[0], true) << endl;
+  string out;
+
+  for(auto mal : args)
+  {
+    if(out != "") out += ' ';
+    out += Printer::prStr(mal, true);
+  }
+
+  cout << out << endl;
 
   return MNil;
 }
@@ -347,18 +355,18 @@ MalType MalIsListOperation::apply(const vector<MalType>& args)
 
 MalType MalIsEmptyOperation::apply(const vector<MalType>& args)
 {
-  auto* list = dynamic_cast<MalList*>(&*args[0]);
+  auto* enumerable = dynamic_cast<MalEnumerable*>(&*args[0]);
 
-  return list->isEmpty() ? MTrue : MFalse;
+  return enumerable->isEmpty() ? MTrue : MFalse;
 }
 
 MalType MalCountOperation::apply(const vector<MalType>& args)
 {
-  if(typeid(*args[0]) != typeid(MalList)) return MalType(new MalInt(0));
+  auto* enumerable = dynamic_cast<MalEnumerable*>(&*args[0]);
 
-  auto* list = dynamic_cast<MalList*>(&*args[0]);
+  if(!enumerable) return MalType(new MalInt(0));
 
-  return MalType(new MalInt(static_cast<int>(list->size())));
+  return MalType(new MalInt(static_cast<int>(enumerable->size())));
 }
 
 MalType MalEqualsOperation::apply(const vector<MalType>& args)
@@ -396,4 +404,44 @@ MalType MalLTEOperation::apply(const vector<MalType>& args)
   auto b = dynamic_cast<MalInt*>(&*args[1]);
 
   return (*a) <= (*b) ? MTrue : MFalse;
+}
+
+MalType MalPrStrOperation::apply(const vector<MalType>& args)
+{
+  string out;
+
+  for(auto itr = args.begin(); itr != args.end(); ++itr)
+  {
+    if(out != "") out += " ";
+    out += Printer::prStr(*itr, true);
+  }
+
+  return MalType(new MalString(out));
+}
+
+MalType MalStrOperation::apply(const vector<MalType>& args)
+{
+  string out;
+
+  for(auto itr = args.begin(); itr != args.end(); ++itr)
+  {
+    out += Printer::prStr(*itr);
+  }
+
+  return MalType(new MalString(out));
+}
+
+MalType MalPrintlnOperation::apply(const vector<MalType>& args)
+{
+  string out;
+
+  for(auto mal : args)
+  {
+    if(out != "") out += ' ';
+    out += Printer::prStr(mal);
+  }
+
+  cout << out << endl;
+
+  return MNil;
 }
