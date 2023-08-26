@@ -104,6 +104,8 @@ public:
   virtual string getString(bool printReadably) override;
 
   virtual bool equals(const MalType& other) const override;
+
+  string operator*();
 };
 
 class MalNil : public MalTypeData
@@ -330,6 +332,86 @@ class MalPrintlnOperation : public MalOperation
 {
 public:
   MalPrintlnOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalReadStringOperation : public MalOperation
+{
+public:
+  MalReadStringOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalSlurpOperation : public MalOperation
+{
+public:
+  MalSlurpOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalEvalOperation : public MalOperation
+{
+public:
+  MalEvalOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalAtom : public MalTypeData
+{
+  MalType ref_;
+
+public:
+  MalAtom(const MalType& ref);
+
+  virtual string getString(bool printReadably) override;
+
+  virtual bool equals(const MalType& other) const override;
+
+  MalType operator*();
+
+  void setRef(const MalType& ref);
+};
+
+class MalAtomOperation : public MalOperation
+{
+public:
+  MalAtomOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsAtomOperation : public MalOperation
+{
+public:
+  MalIsAtomOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalDerefOperation : public MalOperation
+{
+public:
+  MalDerefOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalResetOperation : public MalOperation
+{
+public:
+  MalResetOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalSwapOperation : public MalOperation
+{
+public:
+  MalSwapOperation() = default;
 
   virtual MalType apply(const vector<MalType>& args) override;
 };

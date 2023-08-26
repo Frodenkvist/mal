@@ -17,3 +17,6 @@ step4_if_fn_do: step4_if_fn_do.cpp types.cpp reader.cpp printer.cpp env.cpp core
 
 step5_tco: step5_tco.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
 	$(CXX) $(CXXFLAGS) -o step5_tco step5_tco.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
+
+step6_file: step6_file.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
+	$(CXX) $(CXXFLAGS) -o step6_file step6_file.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp

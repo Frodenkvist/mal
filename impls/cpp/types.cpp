@@ -2,11 +2,15 @@
 #include "error.hpp"
 #include "env.hpp"
 #include "printer.hpp"
+#include "reader.hpp"
 
 #include <iostream>
+#include <fstream>
 
 using std::cout;
 using std::endl;
+using std::ifstream;
+using std::stringstream;
 
 MalType EVAL(MalType input, Env env);
 
@@ -135,13 +139,13 @@ string MalList::getString(bool printReadably)
 
 MalString::MalString(const string& value)
 {
-  value_ = '"' + value + '"';
+  value_ = value;
 }
 
 string MalString::getString(bool printReadably)
 {
   if(!printReadably)
-    return value_.substr(1, value_.size() - 2);
+    return value_;
 
   string readableString;
 
@@ -149,7 +153,7 @@ string MalString::getString(bool printReadably)
 
   readableString += '"';
 
-  for(auto itr = value_.begin() + 1, end = value_.end() - 1; itr != end; ++itr)
+  for(auto itr = value_.begin(), end = value_.end(); itr != end; ++itr)
   {
     char c = *itr;
 
@@ -172,6 +176,11 @@ bool MalString::equals(const MalType& other) const
   auto* otherString = dynamic_cast<MalString*>(&*other);
 
   return value_ == otherString->value_;
+}
+
+string MalString::operator*()
+{
+  return value_;
 }
 
 string MalNil::getString(bool _)
@@ -221,7 +230,7 @@ string MalVector::getString(bool printReadably)
 
 MalKeyword::MalKeyword(const string& keyword)
 {
-  keyword_ = keyword;
+  keyword_ = '\xff' + keyword;
 }
 
 string MalKeyword::getString(bool _)
@@ -244,12 +253,20 @@ MalHashMap::MalHashMap(vector<MalType> elements)
 
   for(size_t i = 0; i < elements.size(); i += 2)
   {
-    const auto& key = elements[i];
     const auto& value = elements[i + 1];
 
-    if(typeid(*key) != typeid(MalString) && typeid(*key) != typeid(MalKeyword)) throw InvalidKeyException("Invalid key in hashmap");
-
-    map_[key->getString(false)] = value;
+    if(auto* stringKey = dynamic_cast<MalString*>(&*elements[i]))
+    {
+      map_['"' + stringKey->getString(false) + '"'] = value;
+    }
+    else if (auto* keywordKey = dynamic_cast<MalKeyword*>(&*elements[i]))
+    {
+      map_[keywordKey->getString(false)] = value;
+    }
+    else
+    {
+     throw InvalidKeyException("Invalid key in hashmap");
+    }
   }
 }
 
@@ -454,4 +471,96 @@ MalType MalPrintlnOperation::apply(const vector<MalType>& args)
   cout << out << endl;
 
   return MNil;
+}
+
+MalType MalReadStringOperation::apply(const vector<MalType>& args)
+{
+  auto* malString = dynamic_cast<MalString*>(&*args[0]);
+
+  return Tokenizer::readStr(*(*malString));
+}
+
+MalType MalSlurpOperation::apply(const vector<MalType>& args)
+{
+  auto* malString = dynamic_cast<MalString*>(&*args[0]);
+
+  ifstream file((*(*malString)));
+
+  string content((std::istreambuf_iterator<char>(file)), (std::istreambuf_iterator<char>()));
+
+  return MalType(new MalString(content));
+}
+
+MalType MalEvalOperation::apply(const vector<MalType>& args)
+{
+  return EVAL(args[0], nullptr);
+}
+
+MalAtom::MalAtom(const MalType& ref)
+{
+  ref_ = ref;
+}
+
+string MalAtom::getString(bool printReadably)
+{
+  return "(atom " + ref_->getString(printReadably) + ")";
+}
+
+bool MalAtom::equals(const MalType& other) const
+{
+  auto* otherAtom = dynamic_cast<MalAtom*>(&*other);
+  if(!otherAtom) return false;
+
+  return ref_->equals(otherAtom->ref_);
+}
+
+MalType MalAtom::operator*()
+{
+  return ref_;
+}
+
+void MalAtom::setRef(const MalType& ref)
+{
+  ref_ = ref;
+}
+
+MalType MalAtomOperation::apply(const vector<MalType>& args)
+{
+  return MalType(new MalAtom(args[0]));
+}
+
+MalType MalIsAtomOperation::apply(const vector<MalType>& args)
+{
+  return !!dynamic_cast<MalAtom*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalDerefOperation::apply(const vector<MalType>& args)
+{
+  return *(*dynamic_cast<MalAtom*>(&*args[0]));
+}
+
+MalType MalResetOperation::apply(const vector<MalType>& args)
+{
+  auto* atom = dynamic_cast<MalAtom*>(&*args[0]);
+
+  atom->setRef(args[1]);
+
+  return args[1];
+}
+
+MalType MalSwapOperation::apply(const vector<MalType>& args)
+{
+  auto* atom = dynamic_cast<MalAtom*>(&*args[0]);
+  auto* operation = dynamic_cast<MalOperation*>(&*args[1]);
+
+  vector<MalType> operationArgs = { *(*atom) };
+
+  for(size_t i = 2; i < args.size(); ++i)
+  {
+    operationArgs.push_back(args[i]);
+  }
+
+  atom->setRef(operation->apply(operationArgs));
+
+  return *(*atom);
 }
