@@ -225,6 +225,9 @@ public:
   virtual string getString(bool printReadably) override;
 
   MalType apply(const vector<MalType>& args);
+
+  MalType getBody() const;
+  Env makeEnv(const vector<MalType>& args) const;
 };
 
 class MalPrnOperation : public MalOperation

@@ -8,7 +8,7 @@
 using std::cout;
 using std::endl;
 
-MalType EVAL(const MalType& input, Env env);
+MalType EVAL(MalType input, Env env);
 
 MalType MFalse = MalType(new MalFalse());
 MalType MTrue = MalType(new MalTrue());
@@ -325,7 +325,17 @@ string MalFunction::getString(bool _)
 
 MalType MalFunction::apply(const vector<MalType>& args)
 {
-  return EVAL(body_, Env(new EnvData(baseEnv_, bindings_, args)));
+  return EVAL(body_, makeEnv(args));
+}
+
+MalType MalFunction::getBody() const
+{
+  return body_;
+}
+
+Env MalFunction::makeEnv(const vector<MalType>& args) const
+{
+  return Env(new EnvData(baseEnv_, bindings_, args));
 }
 
 MalType MalPrnOperation::apply(const vector<MalType>& args)
