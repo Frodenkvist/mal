@@ -564,3 +564,48 @@ MalType MalSwapOperation::apply(const vector<MalType>& args)
 
   return *(*atom);
 }
+
+MalType MalConsOperation::apply(const vector<MalType>& args)
+{
+  vector<MalType> elements = {args[0]};
+
+  auto* malEnumerable = dynamic_cast<MalEnumerable*>(&*args[1]);
+
+  for(const auto& element : (*malEnumerable))
+  {
+    elements.push_back(element);
+  }
+
+  return MalType(new MalList(elements));
+}
+
+MalType MalConcatOperation::apply(const vector<MalType>& args)
+{
+  vector<MalType> elements;
+
+  for(const auto& arg : args)
+  {
+    auto* malEnumerable = dynamic_cast<MalEnumerable*>(&*arg);
+
+    for(const auto& element : (*malEnumerable))
+    {
+      elements.push_back(element);
+    }
+  }
+
+  return MalType(new MalList(elements));
+}
+
+MalType MalVecOperation::apply(const vector<MalType>& args)
+{
+  if(dynamic_cast<MalVector*>(&*args[0])) return args[0];
+
+  vector<MalType> elements;
+
+  for(const auto& element : (*dynamic_cast<MalList*>(&*args[0])))
+  {
+    elements.push_back(element);
+  }
+
+  return MalType(new MalVector(elements));
+}

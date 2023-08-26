@@ -28,5 +28,8 @@ map<string, MalType> Core::ns = {
   { "deref", MalType(new MalDerefOperation()) },
   { "reset!", MalType(new MalResetOperation()) },
   { "swap!", MalType(new MalSwapOperation()) },
-  { "*ARGV*", MalType(new MalList({})) }
+  { "*ARGV*", MalType(new MalList({})) },
+  { "cons", MalType(new MalConsOperation()) },
+  { "concat", MalType(new MalConcatOperation()) },
+  { "vec", MalType(new MalVecOperation()) }
 };
