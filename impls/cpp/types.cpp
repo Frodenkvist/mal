@@ -68,6 +68,11 @@ bool MalInt::operator<=(const MalInt& other) const
   return !((*this) > other);
 }
 
+int MalInt::operator*() const
+{
+  return value_;
+}
+
 bool MalInt::equals(const MalType& other) const
 {
   if(typeid(*other) != typeid(MalInt)) return false;
@@ -328,11 +333,12 @@ MalType MalDivOperation::apply(const vector<MalType>& args)
   return MalType(new MalInt((*a) / (*b)));
 }
 
-MalFunction::MalFunction(const vector<MalType>& bindings, const MalType& body, const Env& baseEnv)
+MalFunction::MalFunction(const vector<MalType>& bindings, const MalType& body, const Env& baseEnv, const bool& isMacro)
 {
   bindings_ = bindings;
   body_ = body;
   baseEnv_ = baseEnv;
+  isMacro_ = isMacro;
 }
 
 string MalFunction::getString(bool _)
@@ -353,6 +359,17 @@ MalType MalFunction::getBody() const
 Env MalFunction::makeEnv(const vector<MalType>& args) const
 {
   return Env(new EnvData(baseEnv_, bindings_, args));
+}
+
+void MalFunction::makeMacro()
+{
+  isMacro_ = true;
+  // return MalType(new MalFunction(bindings_, body_, baseEnv_, true));
+}
+
+bool MalFunction::isMacro() const
+{
+  return isMacro_;
 }
 
 MalType MalPrnOperation::apply(const vector<MalType>& args)
@@ -608,4 +625,43 @@ MalType MalVecOperation::apply(const vector<MalType>& args)
   }
 
   return MalType(new MalVector(elements));
+}
+
+MalType MalNthOperation::apply(const vector<MalType>& args)
+{
+  auto* enumerable = dynamic_cast<MalEnumerable*>(&*args[0]);
+  auto* index = dynamic_cast<MalInt*>(&*args[1]);
+  int size = static_cast<int>(enumerable->size());
+
+  if(*(*index) >= size) throw IndexOutOfBoundsException("Tried to get nth '" 
+    + Printer::prStr(args[1], true) + "' from enumerable with size '" + std::to_string(size) + "'");
+
+  return (*enumerable)[*(*index)];
+}
+
+MalType MalFirstOperation::apply(const vector<MalType>& args)
+{
+  if(dynamic_cast<MalNil*>(&*args[0])) return MNil;
+
+  auto* enumerable = dynamic_cast<MalEnumerable*>(&*args[0]);
+  if(enumerable->isEmpty()) return MNil;
+
+  return (*enumerable)[0];
+}
+
+MalType MalRestOperation::apply(const vector<MalType>& args)
+{
+  if(dynamic_cast<MalNil*>(&*args[0])) return MalType(new MalList({}));
+
+  auto* enumerable = dynamic_cast<MalEnumerable*>(&*args[0]);
+  if(enumerable->isEmpty()) return MalType(new MalList({}));
+
+  vector<MalType> elements;
+
+  for(auto itr = enumerable->begin() + 1; itr != enumerable->end(); ++itr)
+  {
+    elements.push_back(*itr);
+  }
+
+  return MalType(new MalList(elements));
 }

@@ -48,6 +48,8 @@ public:
   bool operator<(const MalInt& other) const;
   bool operator<=(const MalInt& other) const;
 
+  int operator*() const;
+
   virtual bool equals(const MalType& other) const override;
 };
 
@@ -220,9 +222,10 @@ class MalFunction : public MalOperation
   vector<MalType> bindings_;
   MalType body_;
   Env baseEnv_;
+  bool isMacro_;
 
 public:
-  MalFunction(const vector<MalType>& bindings, const MalType& body, const Env& baseEnv);
+  MalFunction(const vector<MalType>& bindings, const MalType& body, const Env& baseEnv, const bool& isMacro = false);
 
   virtual string getString(bool printReadably) override;
 
@@ -230,6 +233,10 @@ public:
 
   MalType getBody() const;
   Env makeEnv(const vector<MalType>& args) const;
+
+  void makeMacro();
+
+  bool isMacro() const;
 };
 
 class MalPrnOperation : public MalOperation
@@ -436,6 +443,30 @@ class MalVecOperation : public MalOperation
 {
 public:
   MalVecOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalNthOperation : public MalOperation
+{
+public:
+  MalNthOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalFirstOperation : public MalOperation
+{
+public:
+  MalFirstOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalRestOperation : public MalOperation
+{
+public:
+  MalRestOperation() = default;
 
   virtual MalType apply(const vector<MalType>& args) override;
 };

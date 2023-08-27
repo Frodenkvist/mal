@@ -23,3 +23,6 @@ step6_file: step6_file.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
 
 step7_quote: step7_quote.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
 	$(CXX) $(CXXFLAGS) -o step7_quote step7_quote.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
+
+step8_macros: step8_macros.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp
+	$(CXX) $(CXXFLAGS) -o step8_macros step8_macros.cpp types.cpp reader.cpp printer.cpp env.cpp core.cpp

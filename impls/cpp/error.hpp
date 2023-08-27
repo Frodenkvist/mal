@@ -51,3 +51,13 @@ public:
   }
 };
 
+class IndexOutOfBoundsException : MalException
+{
+public:
+  IndexOutOfBoundsException(string msg): MalException(msg) {};
+
+  void log() override
+  {
+    cout << "Index Out Of Bounds Exception: " << msg_ << endl;
+  }
+};

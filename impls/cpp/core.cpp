@@ -31,5 +31,8 @@ map<string, MalType> Core::ns = {
   { "*ARGV*", MalType(new MalList({})) },
   { "cons", MalType(new MalConsOperation()) },
   { "concat", MalType(new MalConcatOperation()) },
-  { "vec", MalType(new MalVecOperation()) }
+  { "vec", MalType(new MalVecOperation()) },
+  { "nth", MalType(new MalNthOperation()) },
+  { "first", MalType(new MalFirstOperation()) },
+  { "rest", MalType(new MalRestOperation()) }
 };
