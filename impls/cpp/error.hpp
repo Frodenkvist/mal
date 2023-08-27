@@ -1,5 +1,7 @@
 #pragma once
 
+#include "types.hpp"
+
 #include <string>
 #include <iostream>
 
@@ -7,7 +9,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-class MalException : std::exception
+class MalException : public std::exception
 {
 protected:
   string msg_;
@@ -16,9 +18,11 @@ public:
   MalException(string msg): msg_(msg) {}
 
   virtual void log() = 0;
+
+  string getMsg() { return msg_; }
 };
 
-class EOFException : MalException
+class EOFException : public MalException
 {
 public:
   EOFException(string msg): MalException(msg) {};
@@ -29,7 +33,7 @@ public:
   }
 };
 
-class InvalidKeyException : MalException
+class InvalidKeyException : public MalException
 {
 public:
   InvalidKeyException(string msg): MalException(msg) {};
@@ -40,7 +44,7 @@ public:
   }
 };
 
-class InvalidSymbolException : MalException
+class InvalidSymbolException : public MalException
 {
 public:
   InvalidSymbolException(string msg): MalException(msg) {};
@@ -51,7 +55,7 @@ public:
   }
 };
 
-class IndexOutOfBoundsException : MalException
+class IndexOutOfBoundsException : public MalException
 {
 public:
   IndexOutOfBoundsException(string msg): MalException(msg) {};
@@ -60,4 +64,14 @@ public:
   {
     cout << "Index Out Of Bounds Exception: " << msg_ << endl;
   }
+};
+
+class MalTypeException : public std::exception
+{
+  MalType mal_;
+
+public:
+  MalTypeException(const MalType& mal): mal_(mal) {};
+
+  MalType getMal() { return mal_; }
 };

@@ -235,7 +235,7 @@ string MalVector::getString(bool printReadably)
 
 MalKeyword::MalKeyword(const string& keyword)
 {
-  keyword_ = '\xff' + keyword;
+  keyword_ = keyword;
 }
 
 string MalKeyword::getString(bool _)
@@ -291,9 +291,30 @@ string MalHashMap::getString(bool printReadably)
   return out;
 }
 
+bool MalHashMap::equals(const MalType& other) const
+{
+  auto* otherMap = dynamic_cast<MalHashMap*>(&*other);
+  if(!otherMap || otherMap->map_.size() != map_.size()) return false;
+
+  for(auto pair : (*otherMap))
+  {
+    if(!contains(pair.first)) return false;
+
+    auto pos = map_.find(pair.first);
+    if(!pos->second->equals(pair.second)) return false;
+  }
+
+  return true;
+}
+
 MalType& MalHashMap::operator[](const string& key)
 {
   return map_[key];
+}
+
+bool MalHashMap::contains(const string& key) const
+{
+  return map_.find(key) != map_.end();
 }
 
 string MalOperation::getString(bool _)
@@ -633,7 +654,7 @@ MalType MalNthOperation::apply(const vector<MalType>& args)
   auto* index = dynamic_cast<MalInt*>(&*args[1]);
   int size = static_cast<int>(enumerable->size());
 
-  if(*(*index) >= size) throw IndexOutOfBoundsException("Tried to get nth '" 
+  if(*(*index) >= size) throw IndexOutOfBoundsException("Index out of bounds: Tried to get nth '" 
     + Printer::prStr(args[1], true) + "' from enumerable with size '" + std::to_string(size) + "'");
 
   return (*enumerable)[*(*index)];
@@ -664,4 +685,253 @@ MalType MalRestOperation::apply(const vector<MalType>& args)
   }
 
   return MalType(new MalList(elements));
+}
+
+MalType MalThrowOperation::apply(const vector<MalType>& args)
+{
+  throw MalTypeException(args[0]);
+}
+
+MalType MalApplyOperation::apply(const vector<MalType>& args)
+{
+  auto* operation = dynamic_cast<MalOperation*>(&*args[0]);
+
+  vector<MalType> opArgs;
+
+  for(auto itr = args.begin() + 1; itr != args.end() - 1; ++itr)
+  {
+    opArgs.push_back(*itr);
+  }
+
+  auto* lastEnumerable = dynamic_cast<MalEnumerable*>(&*args[args.size() - 1]);
+
+  for(auto arg : (*lastEnumerable))
+  {
+    opArgs.push_back(arg);
+  }
+
+  return operation->apply(opArgs);
+}
+
+MalType MalMapOperation::apply(const vector<MalType>& args)
+{
+  auto* operation = dynamic_cast<MalOperation*>(&*args[0]);
+  auto* enumerable = dynamic_cast<MalEnumerable*>(&*args[1]);
+  
+  vector<MalType> elements;
+
+  for(auto ast : (*enumerable))
+  {
+    elements.push_back(operation->apply({ast}));
+  }
+
+  return MalType(new MalList(elements));
+}
+
+MalType MalIsNilOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalNil*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalIsTrueOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalTrue*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalIsFalseOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalFalse*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalIsSymbolOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalSymbol*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalSymbolOperation::apply(const vector<MalType>& args)
+{
+  auto* malString = dynamic_cast<MalString*>(&*args[0]);
+
+  return MalType(new MalSymbol(**malString));
+}
+
+MalType MalKeywordOperation::apply(const vector<MalType>& args)
+{
+  if(dynamic_cast<MalKeyword*>(&*args[0])) return args[0];
+
+  auto* malString = dynamic_cast<MalString*>(&*args[0]);
+
+  return MalType(new MalKeyword(":" + **malString));
+}
+
+MalType MalIsKeywordOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalKeyword*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalVectorOperation::apply(const vector<MalType>& args)
+{
+  vector<MalType> elements;
+
+  for(auto arg : args)
+  {
+    elements.push_back(arg);
+  }
+
+  return MalType(new MalVector(elements));
+}
+
+MalType MalIsVectorOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalVector*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalIsSequentialOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalEnumerable*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalHashMapOperation::apply(const vector<MalType>& args)
+{
+  vector<MalType> elements;
+
+  for(auto arg : args)
+  {
+    elements.push_back(arg);
+  }
+
+  return MalType(new MalHashMap(elements));
+}
+
+MalType MalIsMapOperation::apply(const vector<MalType>& args)
+{
+  return dynamic_cast<MalHashMap*>(&*args[0]) ? MTrue : MFalse;
+}
+
+MalType MalAssocOperation::apply(const vector<MalType>& args)
+{
+  auto* malMap = dynamic_cast<MalHashMap*>(&*args[0]);
+
+  vector<MalType> elements;
+
+  for(auto pair : (*malMap))
+  {
+     MalType key = MalType(pair.first[0] == '"' ? 
+        dynamic_cast<MalTypeData*>(new MalString(pair.first.substr(1, pair.first.size() - 2))) :
+        dynamic_cast<MalTypeData*>(new MalKeyword(pair.first)));
+
+    elements.push_back(key);
+    elements.push_back(pair.second);
+  }
+
+  for(auto itr = args.begin() + 1; itr != args.end(); ++itr)
+  {
+    elements.push_back(*itr);
+  }
+
+  return MalType(new MalHashMap(elements));
+}
+
+MalType MalDissocOperation::apply(const vector<MalType>& args)
+{
+  auto* malMap = dynamic_cast<MalHashMap*>(&*args[0]);
+
+  vector<MalType> elements;
+
+  for(auto pair : (*malMap))
+  {
+    bool shouldRemoveKey = false;
+
+    MalType key = MalType(pair.first[0] == '"' ? 
+        dynamic_cast<MalTypeData*>(new MalString(pair.first.substr(1, pair.first.size() - 2))) :
+        dynamic_cast<MalTypeData*>(new MalKeyword(pair.first)));
+
+    for(auto itr = args.begin() + 1; itr != args.end(); ++itr)
+    {
+      if((*itr)->equals(key))
+      {
+        shouldRemoveKey = true;
+        break;
+      }
+    }
+
+    if(shouldRemoveKey) continue;
+
+    elements.push_back(key);
+    elements.push_back(pair.second);
+  }
+
+  return MalType(new MalHashMap(elements));
+}
+
+MalType MalGetOperation::apply(const vector<MalType>& args)
+{
+  if(dynamic_cast<MalNil*>(&*args[0])) return MNil;
+
+  auto* malMap = dynamic_cast<MalHashMap*>(&*args[0]);
+
+  string key;
+
+  if(auto* stringKey = dynamic_cast<MalString*>(&*args[1]))
+  {
+    key = '"' + stringKey->getString(false) + '"';
+  }
+  else if(auto* keywordKey = dynamic_cast<MalKeyword*>(&*args[1]))
+  {
+    key = keywordKey->getString(false);
+  }
+
+  if(!malMap->contains(key)) return MNil;
+
+  return (*malMap)[key];
+}
+
+MalType MalContainsOperation::apply(const vector<MalType>& args)
+{
+  auto* malMap = dynamic_cast<MalHashMap*>(&*args[0]);
+
+  string key;
+
+  if(auto* stringKey = dynamic_cast<MalString*>(&*args[1]))
+  {
+    key = '"' + stringKey->getString(false) + '"';
+  }
+  else if(auto* keywordKey = dynamic_cast<MalKeyword*>(&*args[1]))
+  {
+    key = keywordKey->getString(false);
+  }
+
+  return malMap->contains(key) ? MTrue : MFalse;
+}
+
+MalType MalKeysOperation::apply(const vector<MalType>& args)
+{
+  auto* malMap = dynamic_cast<MalHashMap*>(&*args[0]);
+
+  vector<MalType> keys;
+
+  for(auto pair : (*malMap))
+  {
+     MalType key = MalType(pair.first[0] == '"' ? 
+        dynamic_cast<MalTypeData*>(new MalString(pair.first.substr(1, pair.first.size() - 2))) :
+        dynamic_cast<MalTypeData*>(new MalKeyword(pair.first)));
+
+    keys.push_back(key);
+  }
+
+  return MalType(new MalList(keys));
+}
+
+MalType MalValsOperation::apply(const vector<MalType>& args)
+{
+  auto* malMap = dynamic_cast<MalHashMap*>(&*args[0]);
+
+  vector<MalType> vals;
+
+  for(auto pair : (*malMap))
+  {
+    vals.push_back(pair.second);
+  }
+
+  return MalType(new MalList(vals));
 }

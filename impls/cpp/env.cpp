@@ -37,7 +37,7 @@ EnvData* EnvData::find(const string& key)
 {
     if(data_.find(key) == data_.end())
     {
-        if(outer_ == nullptr) throw InvalidSymbolException(key + " not found in environment");
+        if(outer_ == nullptr) throw InvalidSymbolException("'" + key + "' not found");
 
         return outer_->find(key);
     }

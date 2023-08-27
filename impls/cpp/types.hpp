@@ -169,10 +169,14 @@ public:
 
   virtual string getString(bool printReadably) override;
 
+  virtual bool equals(const MalType& other) const override;
+
   map<string, MalType>::iterator begin() { return map_.begin(); }
   map<string, MalType>::iterator end() { return map_.end(); }
 
   MalType& operator[](const string& key);
+
+  bool contains(const string& key) const;
 };
 
 class MalOperation : public MalTypeData
@@ -467,6 +471,174 @@ class MalRestOperation : public MalOperation
 {
 public:
   MalRestOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalThrowOperation : public MalOperation
+{
+public:
+  MalThrowOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalApplyOperation : public MalOperation
+{
+public:
+  MalApplyOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalMapOperation : public MalOperation
+{
+public:
+  MalMapOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsNilOperation : public MalOperation
+{
+public:
+  MalIsNilOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsTrueOperation : public MalOperation
+{
+public:
+  MalIsTrueOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsFalseOperation : public MalOperation
+{
+public:
+  MalIsFalseOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsSymbolOperation : public MalOperation
+{
+public:
+  MalIsSymbolOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalSymbolOperation : public MalOperation
+{
+public:
+  MalSymbolOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalKeywordOperation : public MalOperation
+{
+public:
+  MalKeywordOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsKeywordOperation : public MalOperation
+{
+public:
+  MalIsKeywordOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalVectorOperation : public MalOperation
+{
+public:
+  MalVectorOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsVectorOperation : public MalOperation
+{
+public:
+  MalIsVectorOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsSequentialOperation : public MalOperation
+{
+public:
+  MalIsSequentialOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalHashMapOperation : public MalOperation
+{
+public:
+  MalHashMapOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalIsMapOperation : public MalOperation
+{
+public:
+  MalIsMapOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalAssocOperation : public MalOperation
+{
+public:
+  MalAssocOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalDissocOperation : public MalOperation
+{
+public:
+  MalDissocOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalGetOperation : public MalOperation
+{
+public:
+  MalGetOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalContainsOperation : public MalOperation
+{
+public:
+  MalContainsOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalKeysOperation : public MalOperation
+{
+public:
+  MalKeysOperation() = default;
+
+  virtual MalType apply(const vector<MalType>& args) override;
+};
+
+class MalValsOperation : public MalOperation
+{
+public:
+  MalValsOperation() = default;
 
   virtual MalType apply(const vector<MalType>& args) override;
 };
